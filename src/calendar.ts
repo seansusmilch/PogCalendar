@@ -61,11 +61,10 @@ export class HomieInviter {
                     access_type: 'offline',
                     scope: SCOPES,
                 })
-                console.log('Authorize this app by visiting this url:', authUrl)
+                console.log('Authorize this app by visiting this url:\n', authUrl)
     
                 return input('Enter the code: ')
                     .then((code)=>{
-                        console.log(code)
                         return oAuth2Client.getToken(code).then((res)=>{
                             writeFile(this.tokenPath, JSON.stringify(res.tokens),()=>{
                                 console.log('Token stored successfully')
@@ -139,7 +138,7 @@ export class HomieInviter {
 
     inviteAndDelete = (event:calendar_v3.Schema$Event) => {
         console.log('Making new event')
-        console.log(event)
+        // console.log(event)
         return this.cal.events.insert({
             calendarId: this.destId,
             sendNotifications: true,
