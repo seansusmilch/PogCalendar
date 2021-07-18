@@ -30,7 +30,7 @@ Steps on how to use the PogCalendar such as *adding events*, *deleting events*, 
 
 Add an event like normal, except change the calendar to `Da Fellas`
 
-![image](https://i.imgur.com/MRxsSiy.jpeg){:height="700px" width="400px"}
+<img src="https://i.imgur.com/MRxsSiy.jpeg" height="600px">
 
 ### Deleting Events
 
