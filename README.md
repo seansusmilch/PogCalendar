@@ -41,3 +41,7 @@ Unhide the calendar you hid in the setup and delete the event on that calendar. 
 ### Modifying Events
 
 Unhide the calendar you hid in the setup and modify the event on that calendar. This will modify it for everyone.
+
+## Known Issues
+
+* Do NOT try and use this with Apple calendar if you do it will break.
