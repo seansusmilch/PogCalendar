@@ -36,7 +36,7 @@ export class HomieInviter {
 
         this.tokenPath = `${path}/token.json`
         this.credsPath = `${path}/credentials.json`
-        console.log(this.tokenPath, this.credsPath)
+        // console.log(this.tokenPath, this.credsPath)
 
         this.cronJob = new CronJob(`*/${check_every} * * * * *`, async()=>{
             this.checkForNew()
