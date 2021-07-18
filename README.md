@@ -22,6 +22,8 @@ Automatically move an event to a hidden calendar while inviting a list of emails
 3. On the hamburger menu, uncheck `Da Fellas Hide`
 ![image](https://i.imgur.com/D2lo8D8.png)
 
+4. Move on to the `Usage` section for info on how to use this mf.
+
 ## Usage
 
 Steps on how to use the PogCalendar such as *adding events*, *deleting events*, and *modifying events* on your ***phone***
