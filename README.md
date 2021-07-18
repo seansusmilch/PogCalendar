@@ -11,7 +11,7 @@ Automatically move an event to a hidden calendar while inviting a list of emails
 
 1. Gimme your email.
 
-2. You should receive two emails. For each email follow these two steps on your **Desktop**
+2. You should receive two emails. For each email follow these two steps
 
    1. Open up the email and click `Add this calendar`
    ![image](https://i.imgur.com/7kHIXx2.png)
@@ -30,7 +30,7 @@ Steps on how to use the PogCalendar such as *adding events*, *deleting events*, 
 
 Add an event like normal, except change the calendar to `Da Fellas`
 
-![image](https://i.imgur.com/MRxsSiy.jpeg)
+![image](https://i.imgur.com/MRxsSiy.jpeg){:height="700px" width="400px"}
 
 ### Deleting Events
 
