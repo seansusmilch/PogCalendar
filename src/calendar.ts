@@ -1,101 +1,16 @@
 import {calendar_v3, google} from 'googleapis'
-import {readFile, readFileSync, writeFile} from 'fs'
-import util from 'util'
-import { getConfig, input } from './helpers'
+import { getConfig, input, loadJSONAsync } from './helpers'
+import {writeFile} from 'fs'
+
 import {CronJob} from 'cron'
-
-
-const TOKEN_PATH = 'token.json'
-const CREDS_PATH = 'credentials.json'
-// const CAL_ID = '6s2lp4b33arle8flb067v7784s@group.calendar.google.com'
-// const HOMIES = ['dangledickrick@gmail.com', 'seantsusmilch@gmail.com']
 
 const SCOPES = ['https://www.googleapis.com/auth/calendar', 'https://www.googleapis.com/auth/calendar.events']
 
-// const sleep = (waitTimeInMs:number) => new Promise(resolve => setTimeout(resolve, waitTimeInMs))
-// const writeFileAsync = util.promisify(writeFile)
-const readFileAsync = util.promisify(readFile)
-const loadJSONAsync = (filename: string): Promise<any> => {
-    return readFileAsync(filename, 'utf8')
-        .then((res)=>JSON.parse(res))
-}
-
-// const getCal = () => new Promise<calendar_v3.Calendar>(async(resolve, reject) => {
-//     const creds = await loadJSONAsync(CREDS_PATH)
-    
-//     const {client_secret, client_id, redirect_uris} = creds.installed
-//     const oAuth2Client = new google.auth.OAuth2(client_id, client_secret, redirect_uris[0])
-
-//     const token = loadJSONAsync(TOKEN_PATH)
-//         .catch((err) =>{
-//             console.log(`\n\nERROR CAUGHT!!!11\n${err.message}\n\n`)
-//             const authUrl = oAuth2Client.generateAuthUrl({
-//                 access_type: 'offline',
-//                 scope: SCOPES,
-//             })
-//             console.log('Authorize this app by visiting this url:', authUrl)
-
-//             return input('Enter the code: ')
-//                 .then((code)=>{
-//                     return oAuth2Client.getToken(code, (err, t)=>{
-//                         writeFile(TOKEN_PATH, JSON.stringify(t),()=>{
-//                             console.log('Token stored successfully')
-//                         })
-//                     })
-//                 })
-//         })
-
-//     oAuth2Client.setCredentials(await token)
-//     resolve(google.calendar({version:'v3', auth: oAuth2Client}))
-// })
-
-
-// const getCalendar = async () => {
-//     var oAuth2Client = new google.auth.OAuth2
-//     try{
-//         const creds = JSON.parse(readFileSync(CREDS_PATH, 'utf8'))
-//         const {client_secret, client_id, redirect_uris} = creds.installed;
-//         oAuth2Client = new google.auth.OAuth2(client_id, client_secret, redirect_uris[0])
-//     }catch(err){
-//         console.error('Error loading client secret file:', err)
-//         return
-//     }
-//     // console.log(oAuth2Client)
-
-//     try{
-//         const token = JSON.parse(readFileSync(TOKEN_PATH, 'utf8'))
-//         oAuth2Client.setCredentials(token)
-//         return google.calendar({version:'v3', auth: oAuth2Client})
-//     }catch(err){
-//         const authUrl = oAuth2Client.generateAuthUrl({
-//             access_type: 'offline',
-//             scope: SCOPES,
-//         })
-//         console.log('Authorize this app by visiting this url:', authUrl)
-//         const rl = readline.createInterface({
-//             input: process.stdin,
-//             output: process.stdout,
-//         })
-//         rl.question('Enter the code from that page here: ', (code) => {
-//             oAuth2Client.getToken(code, async (err, token) => {
-//                 if (err) return console.error('Error retrieving access token', err)
-        
-//                 oAuth2Client.setCredentials(token)
-//                 // Store the token to disk for later program executions
-//                 writeFile(TOKEN_PATH, JSON.stringify(token), (err) => {
-//                     if (err) return console.error(err)
-//                     console.log('Token stored to', TOKEN_PATH)
-//                 })
-//                 rl.close()
-//                 return google.calendar({version:'v3', auth: oAuth2Client})
-//             })
-            
-//         })
-//     }
-//     return google.calendar({version:'v3', auth: oAuth2Client})
+// const readFileAsync = util.promisify(readFile)
+// const loadJSONAsync = (filename: string): Promise<any> => {
+//     return readFileAsync(filename, 'utf8')
+//         .then((res)=>JSON.parse(res))
 // }
-
-
 export class HomieInviter {
     cal: calendar_v3.Calendar
     emails: string[]
@@ -105,7 +20,11 @@ export class HomieInviter {
 
     cronJob: CronJob
 
-    constructor(cal_id:string, dest_cal_id:string, to_invite:string[]=[], check_every:number = 10) {
+    tokenPath:string
+    credsPath:string
+
+
+    constructor(cal_id:string, dest_cal_id:string, to_invite:string[]=[], check_every:number = 10, path:string='./config') {
         this.calId = cal_id
         this.destId = dest_cal_id
         this.emails = to_invite
@@ -114,6 +33,10 @@ export class HomieInviter {
         console.log(`\tcalId: ${cal_id}`)
         console.log(`\tdestId: ${dest_cal_id}`)
         console.log(`\temails: ${to_invite}`)
+
+        this.tokenPath = `${path}/token.json`
+        this.credsPath = `${path}/credentials.json`
+        console.log(this.tokenPath, this.credsPath)
 
         this.cronJob = new CronJob(`*/${check_every} * * * * *`, async()=>{
             this.checkForNew()
@@ -127,12 +50,12 @@ export class HomieInviter {
     }
 
     getCal = () => new Promise<calendar_v3.Calendar>(async(resolve, reject) => {
-        const creds = await loadJSONAsync(CREDS_PATH)
+        const creds = await loadJSONAsync(this.credsPath)
         
         const {client_secret, client_id, redirect_uris} = creds.installed
         const oAuth2Client = new google.auth.OAuth2(client_id, client_secret, redirect_uris[0])
     
-        const token = loadJSONAsync(TOKEN_PATH)
+        const token = loadJSONAsync(this.tokenPath)
             .catch((err) =>{
                 const authUrl = oAuth2Client.generateAuthUrl({
                     access_type: 'offline',
@@ -144,7 +67,7 @@ export class HomieInviter {
                     .then((code)=>{
                         console.log(code)
                         return oAuth2Client.getToken(code).then((res)=>{
-                            writeFile(TOKEN_PATH, JSON.stringify(res.tokens),()=>{
+                            writeFile(this.tokenPath, JSON.stringify(res.tokens),()=>{
                                 console.log('Token stored successfully')
                             })
                             return res.tokens
@@ -178,6 +101,14 @@ export class HomieInviter {
         })
     }
 
+    runFromUrl = (url:string) => {
+        return this.getEventIdByUrl(url)
+            .then((event)=>{
+                // return this.inviteEmails(event)
+                return this.inviteAndDelete(event)
+            })
+    }
+
     inviteEmails = (event:calendar_v3.Schema$Event) => {
         return this.cal.events.update({
             calendarId: this.calId,
@@ -199,14 +130,6 @@ export class HomieInviter {
             console.log('Homies invited!')
             console.log(event.attendees)
         })
-    }
-
-    runFromUrl = (url:string) => {
-        return this.getEventIdByUrl(url)
-            .then((event)=>{
-                // return this.inviteEmails(event)
-                return this.inviteAndDelete(event)
-            })
     }
 
     runFromEvent = (event:calendar_v3.Schema$Event) => {
@@ -263,42 +186,15 @@ export class HomieInviter {
     }
 }
 
-// const main = async () => {
-//     const calendar = await getCal()
-//     calendar.events.list({
-//         calendarId: CAL_ID,
-//         // eventId: 'b3cqe9090eff9tvablfod3hh1s',
-//         // eventId: '4/1AX4XfWjO2nzTzRMcaQkOwbUQYcOagOtUydv_dwHOhjjOGRPf02XGqGqzk5c',
-//         // timeMin: (new Date()).toISOString(),
-//         maxResults: 10,
-//         singleEvents: true,
-//         // orderBy: 'startTime',
-//     }, (err, res) => {
-//         if (err) return console.error('API Error: ', err)
-//         const event = res.data.items
-//         console.log(event)
-//         // if(events.length == 0){
-//         //     console.log('No events found')
-//         //     return
-//         // }
-//         // console.log('Upcoming:')
-//         // for (const ev of events) {
-//         //     console.log(`${ev.summary} - ${ev.htmlLink}\n${JSON.stringify(ev, null, 4)}`)
-//         // }
-//     })
-// }
-
-// main()
-// getCal().then((val)=>console.log(val))
-
-const pog = async () => {
+const main = async () => {
     const config = getConfig()
     const homes = new HomieInviter(
         config.calendar.listen_calId, 
         config.calendar.dest_calId, 
-        config.calendar.emails
+        config.calendar.emails,
+        config.calendar.check_secs,
+        config.usepath
     )
     await homes.setup()
-    const event = await homes.getEventIdByUrl('https://www.google.com/calendar/event?eid=MDNhNG9kY2Q2NHFyNmY1Nzk2MHFwcG4zbWYgNnMybHA0YjMzYXJsZThmbGIwNjd2Nzc4NHNAZw')
-    homes.inviteEmails(event)
 }
+main()
